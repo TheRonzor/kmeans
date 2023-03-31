@@ -3,7 +3,9 @@
 #   May you share freely, never taking more than you give.
 
 
-# The Fancy Version!
+        ##############################
+        # The Fun and Fancy Version! #
+        ##############################
 
 
 import numpy as np
@@ -19,19 +21,27 @@ plt.style.use('dark_background')
 __version__ = '0.0.1'
 
 class KMeansAnim():
-    FIG_SIZE    = (8,8)
+    FIG_SIZE    = (12,12)
     ALPHA_DATA  = 0.6
     ALPHA_CENT  = 0.9
     SIZE_DATA   = 20
     SIZE_CENT   = 500
 
-    DT          = 1
+    DT          = 0.01
+    DX          = 0.1
+    TOL         = 1e-12
 
+    SIGMOID_A   = 0.5 # Half max
+    SIGMOID_K   = 2 # Rate
+    SIGMOID_RES = 100 # Number of points on transition curve
+    SIGMOID_MIN = 0.01
+    SIGMOID_MAX = 0.99
+    
     def __init__(self, 
-                 n_points           = 500, 
-                 n_clusters         = 3, 
+                 n_points           = 100, 
+                 n_clusters         = 5, 
                  n_clusters_guess   = None, 
-                 method             = 'naive',
+                 method             = 'from_data',
                  seed               = None):
         
         # Initialize settings
@@ -45,7 +55,7 @@ class KMeansAnim():
             self.n_clusters_guess = n_clusters_guess
         
         if seed is None:
-            self.seed = 42
+            self.seed = np.random.randint(1000)
         else:
             self.seed = seed
         
@@ -67,6 +77,14 @@ class KMeansAnim():
             raise(NotImplementedError())
         self.cluster_colors = get_cmap('rainbow')(np.linspace(0, 1, self.n_clusters_guess))[:,:-1] # Everything except the alpha
 
+        # Initialize a placeholder for new centroids, out of range
+        #self.new_centroids = -np.ones(shape=[self.n_clusters_guess, 2])
+        self.new_centroids = self.centroids.copy()
+
+        # Transition curve for animations
+        self.sigmoid = 1/(1+(1/np.linspace(self.SIGMOID_MIN,self.SIGMOID_MAX, self.SIGMOID_RES)**self.SIGMOID_A-1)**self.SIGMOID_K)
+        self.path_pos = self.SIGMOID_RES-1
+
         # Initialize the figure objects
         self.fig, self.ax = plt.subplots(figsize=self.FIG_SIZE)
 
@@ -84,12 +102,10 @@ class KMeansAnim():
         self.ax.set_yticks([])
         self.ax.set_xlim(-0.01,1.01)
         self.ax.set_ylim(-0.01,1.01)
-        self.ax.set_title('Initializing...')
         return
 
     def ShowInitialData(self):
         # Nothing here for now
-        sleep(self.DT)
         return self.scat_data, self.scat_cent,
 
     def UpdateClusters(self):
@@ -102,43 +118,64 @@ class KMeansAnim():
         for label in np.unique(self.labels):
             idx = np.where(self.labels == label)
             self.color_data[idx, :] = self.cluster_colors[label, :]
+        self.scat_data.set_color(self.color_data)
         return
     
     def UpdateCentroids(self):
         for i in range(self.n_clusters_guess):
             idx = self.labels == i
-            self.centroids[i,:] = np.mean(self.data[idx,:], axis=0)
+            self.new_centroids[i,:] = np.mean(self.data[idx,:], axis=0)
+        return
+    
+    def MoveAlongCentroidPath(self):
+        self.path_pos += 1
+        self.centroids = self.centroid_path[self.path_pos, :]
+        return
+    
+    def CreateCentroidPath(self):
+        self.path_pos = 0
+        self.centroid_path = self.centroids + np.array([si*(self.new_centroids - self.centroids) for si in self.sigmoid])
         return
 
     def Update(self, frame_number):
         if frame_number == 0:
             self.scat_cent.set_facecolor(self.color_cent)
             self.scat_cent.set_alpha(self.ALPHA_CENT)
-            sleep(self.DT)
+            self.scat_data.set_offsets(self.data)
+            self.first = True
+            self.steps = 0
         elif frame_number == 1:
             self.UpdateClusters()
-            sleep(self.DT)
+            self.first = True
         else:
-            self.UpdateClusters()
-            self.UpdateCentroids()
-            sleep(self.DT)
-
-        self.ax.set_title('Frame ' + str(frame_number))
-
-        self.scat_data.set_offsets(self.data)
-        self.scat_data.set_color(self.color_data)
+            if self.path_pos == self.SIGMOID_RES-1:
+                self.steps += 1
+                self.ax.set_title('Iteration: ' + str(self.steps))
+                self.UpdateCentroids()
+                self.CreateCentroidPath()
+                self.UpdateClusters()
+            else:
+                self.MoveAlongCentroidPath()
 
         self.scat_cent.set_offsets(self.centroids)
-        #self.scat_cent.set_color(self.color_cent)
+
+        if self.first:
+            self.first = False
+        else:
+            condition = np.max(np.abs(self.centroids - self.new_centroids))
+            if condition == 0:
+                self.ax.set_title('We are done after ' + str(self.steps) + ' iterations.')
+                self.ani.event_source.stop()
+        
         return self.scat_data, self.scat_cent, 
 
     def Go(self):
         self.ani = FuncAnimation(self.fig, 
                                  self.Update,
                                  init_func = self.ShowInitialData,
-                                 blit=False,  # Can't seem to get blitting to work with titles, even if using ax.text inside the plot area :-(
-                                 interval=33,
-                                 cache_frame_data=True)
+                                 blit = False,  # Can't seem to get blitting to work with titles, even if using ax.text inside the plot area :-(
+                                 interval = 1,
+                                 cache_frame_data = True)
         plt.show()
         return
 

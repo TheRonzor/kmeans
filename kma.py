@@ -110,6 +110,7 @@ class KMeansAnim():
         if frame_number == 0:
             self.scat_cent.set_facecolor(self.color_cent)
             self.scat_cent.set_alpha(self.ALPHA_CENT)
+            self.scat_data.set_offsets(self.data)
             sleep(self.DT)
         elif frame_number == 1:
             self.UpdateClusters()
@@ -120,12 +121,10 @@ class KMeansAnim():
             sleep(self.DT)
 
         self.ax.set_title('Frame ' + str(frame_number))
-
-        self.scat_data.set_offsets(self.data)
+        
         self.scat_data.set_color(self.color_data)
-
         self.scat_cent.set_offsets(self.centroids)
-        #self.scat_cent.set_color(self.color_cent)
+
         return self.scat_data, self.scat_cent, 
 
     def Go(self):
