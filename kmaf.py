@@ -21,7 +21,7 @@ plt.style.use('dark_background')
 __version__ = '0.0.1'
 
 class KMeansAnim():
-    FIG_SIZE    = (12,12)
+    FIG_SIZE    = (8,8)
     
     # Marker settings
     ALPHA_DATA  = 0.6
@@ -38,11 +38,11 @@ class KMeansAnim():
     SIGMOID_K   = 3         # Sharpness (2)
     SIGMOID_RES = 15        # Number of points
     SIGMOID_MIN = 0.01
-    SIGMOID_MAX = 0.99
+    SIGMOID_MAX = 1.00
     
     def __init__(self, 
                  n_points           = 750, 
-                 n_clusters         = 8, 
+                 n_clusters         = 3, 
                  n_clusters_guess   = None, 
                  method             = 'from_data',
                  seed               = None):
@@ -159,6 +159,7 @@ class KMeansAnim():
                 self.CreateCentroidPath()
             else:
                 self.MoveAlongCentroidPath()
+                self.first=True
 
         self.scat_cent.set_offsets(self.centroids)
 
