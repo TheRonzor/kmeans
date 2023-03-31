@@ -34,14 +34,14 @@ class KMeansAnim():
     TOL         = 1e-12  # Old idea
 
     # Transition curve
-    SIGMOID_A   = 0.5       # Timing
-    SIGMOID_K   = 2         # Sharpness
+    SIGMOID_A   = 0.5       # Timing (1)
+    SIGMOID_K   = 3         # Sharpness (2)
     SIGMOID_RES = 15        # Number of points
     SIGMOID_MIN = 0.01
     SIGMOID_MAX = 0.99
     
     def __init__(self, 
-                 n_points           = 10000, 
+                 n_points           = 750, 
                  n_clusters         = 8, 
                  n_clusters_guess   = None, 
                  method             = 'from_data',
