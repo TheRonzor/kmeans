@@ -2,6 +2,10 @@
 #   May you find forgiveness for yourself and forgive others
 #   May you share freely, never taking more than you give.
 
+
+# The Fancy Version!
+
+
 import numpy as np
 from time import sleep
 import matplotlib.pyplot as plt
