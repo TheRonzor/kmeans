@@ -92,7 +92,7 @@ class KMeansAnim():
         self.fig, self.ax = plt.subplots(figsize=self.FIG_SIZE)
 
         self.scat_data = plt.scatter([], [], ec='k', alpha = self.ALPHA_DATA, s = self.SIZE_DATA)
-        self.scat_cent = plt.scatter([], [], ec='w', s = self.SIZE_CENT, marker='*', linewidths=1)
+        self.scat_cent = plt.scatter([], [], ec='w', s = self.SIZE_CENT, marker='*', linewidths=1.5)
 
         # Initialize the color arrays
         self.color_data = np.ones([len(self.data),3])
@@ -108,7 +108,7 @@ class KMeansAnim():
         return
 
     def ShowInitialData(self):
-        # Nothing here for now
+        # Unused, get rid of it
         return self.scat_data, self.scat_cent,
 
     def UpdateClusters(self):
@@ -139,17 +139,20 @@ class KMeansAnim():
         self.path_pos = 0
         self.centroid_path = self.centroids + np.array([si*(self.new_centroids - self.centroids) for si in self.sigmoid])
         return
+    
+    def CheckIfDone(self):
+        return np.max(np.abs(self.centroids - self.new_centroids)) == 0
 
     def Update(self, frame_number):
         if frame_number == 0:
             self.scat_cent.set_facecolor(self.color_cent)
             self.scat_cent.set_alpha(self.ALPHA_CENT)
             self.scat_data.set_offsets(self.data)
-            self.first = True
+            self.hold = True
             self.steps = 0
-        elif frame_number == 1:
+        #elif frame_number == 1:
             #self.UpdateClusters()
-            self.first = True
+            #self.first = True
         else:
             if self.path_pos == self.SIGMOID_RES-1:
                 self.steps += 1
@@ -159,24 +162,22 @@ class KMeansAnim():
                 self.CreateCentroidPath()
             else:
                 self.MoveAlongCentroidPath()
-                self.first=True
+                self.hold=True
 
         self.scat_cent.set_offsets(self.centroids)
 
-        if self.first:
-            self.first = False
-        else:
-            condition = np.max(np.abs(self.centroids - self.new_centroids))
-            if condition == 0:
-                self.ax.set_title('We are done after ' + str(self.steps) + ' iterations.')
-                self.ani.event_source.stop()
+        if self.hold:
+            self.hold = False
+        elif self.CheckIfDone():
+            self.ax.set_title('We are done after ' + str(self.steps) + ' iterations.')
+            self.ani.event_source.stop() 
         
         return self.scat_data, self.scat_cent, 
 
     def Go(self):
         self.ani = FuncAnimation(self.fig, 
                                  self.Update,
-                                 init_func = self.ShowInitialData,
+                                 #init_func = self.ShowInitialData,
                                  blit = False,  # Can't seem to get blitting to work with titles, even if using ax.text inside the plot area :-(
                                  interval = 33,
                                  cache_frame_data = True)
