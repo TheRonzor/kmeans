@@ -22,24 +22,27 @@ __version__ = '0.0.1'
 
 class KMeansAnim():
     FIG_SIZE    = (12,12)
+    
+    # Marker settings
     ALPHA_DATA  = 0.6
     ALPHA_CENT  = 0.9
     SIZE_DATA   = 20
     SIZE_CENT   = 500
 
-    DT          = 0.01
-    DX          = 0.1
-    TOL         = 1e-12
+    DT          = 0.01   # For sleep()
+    DX          = 0.1    # Old idea
+    TOL         = 1e-12  # Old idea
 
-    SIGMOID_A   = 0.5 # Half max
-    SIGMOID_K   = 2 # Rate
-    SIGMOID_RES = 100 # Number of points on transition curve
+    # Transition curve
+    SIGMOID_A   = 0.5       # Timing
+    SIGMOID_K   = 2         # Sharpness
+    SIGMOID_RES = 15        # Number of points
     SIGMOID_MIN = 0.01
     SIGMOID_MAX = 0.99
     
     def __init__(self, 
-                 n_points           = 100, 
-                 n_clusters         = 5, 
+                 n_points           = 10000, 
+                 n_clusters         = 8, 
                  n_clusters_guess   = None, 
                  method             = 'from_data',
                  seed               = None):
@@ -145,15 +148,15 @@ class KMeansAnim():
             self.first = True
             self.steps = 0
         elif frame_number == 1:
-            self.UpdateClusters()
+            #self.UpdateClusters()
             self.first = True
         else:
             if self.path_pos == self.SIGMOID_RES-1:
                 self.steps += 1
                 self.ax.set_title('Iteration: ' + str(self.steps))
+                self.UpdateClusters()
                 self.UpdateCentroids()
                 self.CreateCentroidPath()
-                self.UpdateClusters()
             else:
                 self.MoveAlongCentroidPath()
 
@@ -174,7 +177,7 @@ class KMeansAnim():
                                  self.Update,
                                  init_func = self.ShowInitialData,
                                  blit = False,  # Can't seem to get blitting to work with titles, even if using ax.text inside the plot area :-(
-                                 interval = 1,
+                                 interval = 33,
                                  cache_frame_data = True)
         plt.show()
         return
