@@ -4,7 +4,7 @@
 #  learn from it.                                                        #
 #                                                                        #
 #  I would also like to share a blessing with you that was shared with   #
-#  me through another random piece of code long ago in a land far away:  #
+#  me through another random piece of code long ago in a far away land:  #
 #                                                                        #
 #      May you do good and not evil                                      #
 #      May you find forgiveness for yourself and forgive others          #
@@ -19,17 +19,20 @@
         ##############################
 
 
-import numpy as np
-from time import sleep
-import matplotlib.pyplot as plt
-from matplotlib.cm import get_cmap
-from sklearn.datasets import make_blobs as mb
-from matplotlib.animation import FuncAnimation
-from sklearn.preprocessing import MinMaxScaler as MMS
 
-plt.style.use('dark_background')
+import numpy as np                                          # It's pronounced num-pee
+from time import sleep                                      # because even computers need to slow down sometimes
+import matplotlib.pyplot as plt                             # we're making pictures
+from matplotlib.cm import get_cmap                          # get_cmap returns a colormap object which can be used to easily generate colors
+from sklearn.datasets import make_blobs as mb               # this function makes blobs of data
+from matplotlib.animation import FuncAnimation              # animation driver, it's kind of weird
+from sklearn.preprocessing import MinMaxScaler as MMS       # all of the action will happen in the unit square
 
-__version__ = '1.0.0'
+plt.style.use('dark_background')                            # it looks better in the dark
+
+__version__ = '1.0.1'                                       # I might remember to update the version number occasionally
+
+
 
 class KMeansAnim():
     FIG_SIZE    = (8,8)
@@ -41,11 +44,11 @@ class KMeansAnim():
     SIZE_CENT   = 500
 
     # Transition curve
-    SIGMOID_A   = 0.5       # Timing (1)
-    SIGMOID_K   = 3         # Sharpness (2)
-    SIGMOID_RES = 15        # Number of points
-    SIGMOID_MIN = 0.01
-    SIGMOID_MAX = 1.00
+    SIGMOID_A   = 1.6       # Timing
+    SIGMOID_K   = 2.4       # Sharpness
+    SIGMOID_RES = 20        # Number of points
+    SIGMOID_MIN = 0.01      # Not zero
+    SIGMOID_MAX = 1.00      # Definitely one
 
     DT          = 1.00      # For sleeps, in seconds
     
@@ -184,8 +187,8 @@ class KMeansAnim():
         else:
             if self.path_pos == self.SIGMOID_RES-1:
                 self.steps += 1
-                sleep(self.DT)
                 self.ax.set_title('Iteration: ' + str(self.steps))
+                sleep(self.DT)
                 self.UpdateClusters()
                 self.UpdateCentroids()
                 self.CreateCentroidPath()
