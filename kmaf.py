@@ -212,16 +212,6 @@ class KMeansAnim():
         plt.show()
         return
 
-
-
-
-# They say we do this so that
-# the code doesn't run if you import
-# this module somewhere else...
-# but to do so would imply you don't
-# understand the purpose of the code!
-
-# Nonetheless, here's the "best practice":
 if __name__ == '__main__':
     k = KMeansAnim()
     k.Go()
