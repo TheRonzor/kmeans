@@ -1,9 +1,20 @@
-#   May you do good and not evil
-#   May you find forgiveness for yourself and forgive others
-#   May you share freely, never taking more than you give.
+##########################################################################
+#  The author of this code claims no rights or responsiblities for it.   #
+#  The code is provided as is, with the hope that you will enjoy and/or  #
+#  learn from it.                                                        #
+#                                                                        #
+#  I would also like to share a blessing with you that was shared with   #
+#  me through another random piece of code long ago in a land far away:  #
+#                                                                        #
+#      May you do good and not evil                                      #
+#      May you find forgiveness for yourself and forgive others          #
+#      May you share freely, never taking more than you give.            #
+#                                                                        #
+##########################################################################
 
 
         ##############################
+        #         K-means            #
         # The Fun and Fancy Version! #
         ##############################
 
@@ -18,7 +29,7 @@ from sklearn.preprocessing import MinMaxScaler as MMS
 
 plt.style.use('dark_background')
 
-__version__ = '0.0.1'
+__version__ = '1.0.0'
 
 class KMeansAnim():
     FIG_SIZE    = (8,8)
@@ -29,22 +40,20 @@ class KMeansAnim():
     SIZE_DATA   = 20
     SIZE_CENT   = 500
 
-    DT          = 0.01   # For sleep()
-    DX          = 0.1    # Old idea
-    TOL         = 1e-12  # Old idea
-
     # Transition curve
     SIGMOID_A   = 0.5       # Timing (1)
     SIGMOID_K   = 3         # Sharpness (2)
     SIGMOID_RES = 15        # Number of points
     SIGMOID_MIN = 0.01
     SIGMOID_MAX = 1.00
+
+    DT          = 1.00   # For sleeps
     
     def __init__(self, 
-                 n_points           = 750, 
-                 n_clusters         = 3, 
+                 n_points           = 1000, 
+                 n_clusters         = 5, 
                  n_clusters_guess   = None, 
-                 method             = 'from_data',
+                 method             = 'k++',
                  seed               = None):
         
         # Initialize settings
@@ -62,6 +71,7 @@ class KMeansAnim():
         else:
             self.seed = seed
         
+        print('Running with seed: ', self.seed)
         self.rng = np.random.RandomState(self.seed)
 
         # Create the data
@@ -69,7 +79,8 @@ class KMeansAnim():
                                centers      = self.n_clusters, 
                                n_features   = 2,  
                                random_state = self.rng)
-        self.data = MMS().fit_transform(self.data) # Rescale data to be in the unit square
+        
+        self.data = MMS().fit_transform(self.data) # Rescale data to be in the unit square for these examples
 
         # Create the centroids
         if method == 'naive':
@@ -77,7 +88,25 @@ class KMeansAnim():
         elif method == 'from_data':
             self.centroids = self.data[self.rng.choice(self.data.shape[0], replace=False, size=self.n_clusters_guess)]
         elif method == 'k++':
-            raise(NotImplementedError())
+            # Select first centroid uniformly from the data
+            self.centroids = self.data[self.rng.choice(self.data.shape[0]), :].reshape(1,-1)
+            while self.centroids.shape[0] < self.n_clusters_guess:
+                # Initialize distance array
+                d = np.zeros(shape=[self.data.shape[0], self.centroids.shape[0]])
+                
+                # Compute distance from each point to each centroid
+                for i, c in enumerate(self.centroids):
+                    d[:,i] = np.sum((self.data-c)**2,axis=1)
+                
+                # For each point, compute distance to closest centroid
+                p = np.min(d, axis=1)
+                
+                # Select the next centroid from the data with probability proportional
+                # to the squared distance to the closest centroid
+                idx = self.rng.choice(len(self.data), p=p/sum(p))
+                new_centroid = self.data[idx,:].reshape(1,-1)
+                self.centroids = np.concatenate([self.centroids, new_centroid], axis=0)
+
         self.cluster_colors = get_cmap('rainbow')(np.linspace(0, 1, self.n_clusters_guess))[:,:-1] # Everything except the alpha
 
         # Initialize a placeholder for new centroids, out of range
@@ -85,12 +114,14 @@ class KMeansAnim():
         self.new_centroids = self.centroids.copy()
 
         # Transition curve for animations
-        self.sigmoid = 1/(1+(1/np.linspace(self.SIGMOID_MIN,self.SIGMOID_MAX, self.SIGMOID_RES)**self.SIGMOID_A-1)**self.SIGMOID_K)
+        # f(t) = 1/(1+ (1/t^a -1)^k); a is timing, k is sharpness of the curve
+        self.sigmoid = 1/(1+(1/np.linspace(self.SIGMOID_MIN, self.SIGMOID_MAX, self.SIGMOID_RES)**self.SIGMOID_A-1)**self.SIGMOID_K)
         self.path_pos = self.SIGMOID_RES-1
 
         # Initialize the figure objects
         self.fig, self.ax = plt.subplots(figsize=self.FIG_SIZE)
 
+        # Initialize empty plots with display settings for data and centroids
         self.scat_data = plt.scatter([], [], ec='k', alpha = self.ALPHA_DATA, s = self.SIZE_DATA)
         self.scat_cent = plt.scatter([], [], ec='w', s = self.SIZE_CENT, marker='*', linewidths=1.5)
 
@@ -148,14 +179,12 @@ class KMeansAnim():
             self.scat_cent.set_facecolor(self.color_cent)
             self.scat_cent.set_alpha(self.ALPHA_CENT)
             self.scat_data.set_offsets(self.data)
-            self.hold = True
             self.steps = 0
-        #elif frame_number == 1:
-            #self.UpdateClusters()
-            #self.first = True
+            self.hold = True
         else:
             if self.path_pos == self.SIGMOID_RES-1:
                 self.steps += 1
+                sleep(self.DT)
                 self.ax.set_title('Iteration: ' + str(self.steps))
                 self.UpdateClusters()
                 self.UpdateCentroids()
@@ -169,7 +198,7 @@ class KMeansAnim():
         if self.hold:
             self.hold = False
         elif self.CheckIfDone():
-            self.ax.set_title('We are done after ' + str(self.steps) + ' iterations.')
+            self.ax.set_title('We are done after ' + str(self.steps-1) + ' iteration(s).')
             self.ani.event_source.stop() 
         
         return self.scat_data, self.scat_cent, 
@@ -177,12 +206,22 @@ class KMeansAnim():
     def Go(self):
         self.ani = FuncAnimation(self.fig, 
                                  self.Update,
-                                 #init_func = self.ShowInitialData,
                                  blit = False,  # Can't seem to get blitting to work with titles, even if using ax.text inside the plot area :-(
                                  interval = 33,
                                  cache_frame_data = True)
         plt.show()
         return
 
-k = KMeansAnim()
-k.Go()
+
+
+
+# They say we do this so that
+# the code doesn't run if you import
+# this module somewhere else...
+# but to do so would imply you don't
+# understand the purpose of the code!
+
+# Nonetheless, here's the "best practice":
+if __name__ == '__main__':
+    k = KMeansAnim()
+    k.Go()
