@@ -206,7 +206,7 @@ class KMeansAnim():
         self.ani = FuncAnimation(self.fig, 
                                  self.Update,
                                  blit = False,  # Can't seem to get blitting to work with titles, even if using ax.text inside the plot area :-(
-                                 interval = 33,
+                                 interval = 10,
                                  cache_frame_data = True)
         plt.show()
         return
