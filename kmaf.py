@@ -46,7 +46,7 @@ class KMeansAnim():
     # Transition curve
     SIGMOID_A   = 1.6       # Timing
     SIGMOID_K   = 2.4       # Sharpness
-    SIGMOID_RES = 20        # Number of points
+    SIGMOID_RES = 30        # Number of points
     SIGMOID_MIN = 0.01      # Not zero
     SIGMOID_MAX = 1.00      # Definitely one
 
@@ -140,10 +140,6 @@ class KMeansAnim():
         self.ax.set_xlim(-0.01,1.01)
         self.ax.set_ylim(-0.01,1.01)
         return
-
-    def ShowInitialData(self):
-        # Unused, get rid of it
-        return self.scat_data, self.scat_cent,
 
     def UpdateClusters(self):
         distances = []
