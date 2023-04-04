@@ -47,11 +47,11 @@ class KMeansAnim():
     SIGMOID_MIN = 0.01
     SIGMOID_MAX = 1.00
 
-    DT          = 1.00   # For sleeps
+    DT          = 1.00      # For sleeps, in seconds
     
     def __init__(self, 
                  n_points           = 1000, 
-                 n_clusters         = 5, 
+                 n_clusters         = 4, 
                  n_clusters_guess   = None, 
                  method             = 'k++',
                  seed               = None):
