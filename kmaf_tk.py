@@ -3,7 +3,8 @@ import kmaf
 
 ANCHOR = tk.N + tk.E
 
-LBL_H = 2
+LBL_H  = 2
+PADX   = 10
 
 # The function that runs when we push the button
 def Go():
@@ -47,7 +48,7 @@ input_n.insert(0, 100)
 
 # Methods
 label_meth = tk.Label(settings, text='Method = ', height=LBL_H)
-label_meth.grid(row=0, column=2, padx=10, sticky = ANCHOR)
+label_meth.grid(row=0, column=2, padx=PADX, sticky = ANCHOR)
 
 method_value = tk.StringVar()
 options_methods = ['naive', 'from_data', 'k++']
@@ -58,9 +59,9 @@ input_meth.grid(row=0, column=3)
 
 # Random seed
 label_seed = tk.Label(settings, text='Seed = ', height=LBL_H)
-label_seed.grid(row=1, column=2, padx=10, sticky=ANCHOR)
+label_seed.grid(row=1, column=2, padx=PADX, sticky=ANCHOR)
 input_seed = tk.Entry(settings, width=5)
-input_seed.grid(row=1, column=3, padx=10, sticky=ANCHOR)
+input_seed.grid(row=1, column=3, padx=PADX, sticky=ANCHOR)
 
 seed = kmaf.np.random.randint(1000)
 input_seed.insert(0, seed)
