@@ -4,7 +4,7 @@
 #  learn from it.                                                        #
 #                                                                        #
 #  I would also like to share a blessing with you that was shared with   #
-#  me through another random piece of code long ago in a far away land:  #
+#  me through another random piece of code, long ago in a far away land: #
 #                                                                        #
 #      May you do good and not evil                                      #
 #      May you find forgiveness for yourself and forgive others          #
@@ -38,12 +38,14 @@ class KMeansAnim():
     FIG_SIZE    = (8,8)
     
     # Marker settings
+    #  Data
     ALPHA_DATA  = 0.6
-    ALPHA_CENT  = 0.9
     SIZE_DATA   = 20
+    #  Centroids
+    ALPHA_CENT  = 0.9
     SIZE_CENT   = 500
 
-    # Transition curve
+    # Transition curve (1/f) where f = 1 + (1/x^a - 1)^k
     SIGMOID_A   = 1.6       # Timing
     SIGMOID_K   = 2.4       # Sharpness
     SIGMOID_RES = 30        # Number of points
