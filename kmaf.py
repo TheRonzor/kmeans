@@ -61,7 +61,7 @@ class KMeansAnim():
                  method             = 'k++',
                  seed               = None):
         
-        # Initialize settings
+        # Initialize cluster settings
         self.n_points   = n_points
         self.n_clusters = n_clusters
         
