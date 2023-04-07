@@ -46,8 +46,8 @@ class KMeansAnim():
     SIZE_CENT   = 500
 
     # Transition curve (1/f) where f = 1 + (1/x^a - 1)^k
-    SIGMOID_A   = 1.6       # Timing
-    SIGMOID_K   = 2.4       # Sharpness
+    SIGMOID_A   = 1.6       # "Timing"
+    SIGMOID_K   = 2.4       # "Sharpness"
     SIGMOID_RES = 30        # Number of points
     SIGMOID_MIN = 0.01      # Not zero
     SIGMOID_MAX = 1.00      # Definitely one
@@ -59,7 +59,8 @@ class KMeansAnim():
                  n_clusters         = 4, 
                  n_clusters_guess   = None, 
                  method             = 'k++',
-                 seed               = None):
+                 seed               = None,
+                 cmap               = 'rainbow'):
         
         # Initialize cluster settings
         self.n_points   = n_points
@@ -112,7 +113,7 @@ class KMeansAnim():
                 new_centroid = self.data[idx,:].reshape(1,-1)
                 self.centroids = np.concatenate([self.centroids, new_centroid], axis=0)
 
-        self.cluster_colors = get_cmap('rainbow')(np.linspace(0, 1, self.n_clusters_guess))[:,:-1] # Everything except the alpha
+        self.cluster_colors = get_cmap(cmap)(np.linspace(0, 1, self.n_clusters_guess))[:,:-1] # Everything except the alpha
 
         # Initialize a placeholder for new centroids, out of range
         #self.new_centroids = -np.ones(shape=[self.n_clusters_guess, 2])
