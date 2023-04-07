@@ -38,13 +38,16 @@ class SimpleWindow():
     def AddEntry(self, label, default, width=5):
         '''Add label and tk.Entry to the settings frame',
            and store a reference to the value in a dictionary.
-           
+
            The values provided for 'label' should be unique
            '''
 
 
         return
-
+    
+    def GetEntry(label):
+        
+        return
 
     def Deploy(self):
         self.interface.pack(padx=20, pady=20)
