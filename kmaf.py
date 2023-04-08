@@ -45,7 +45,7 @@ class KMeansAnim():
     ALPHA_CENT  = 0.9
     SIZE_CENT   = 500
 
-    # Transition curve (1/f) where f = 1 + (1/x^a - 1)^k
+    # Transition curve for animation, (1/f) where f = 1 + (1/x^a - 1)^k
     SIGMOID_A   = 1.6       # "Timing"
     SIGMOID_K   = 2.4       # "Sharpness"
     SIGMOID_RES = 30        # Number of points
@@ -55,8 +55,8 @@ class KMeansAnim():
     DT          = 1.00      # For sleeps, in seconds
     
     def __init__(self, 
-                 n_points           = 1000, 
-                 n_clusters         = 4, 
+                 n_points           = 420, 
+                 n_clusters         = 42, 
                  n_clusters_guess   = None, 
                  method             = 'k++',
                  seed               = None,
