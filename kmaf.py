@@ -90,7 +90,7 @@ class KMeansAnim():
 
         # Create the centroids
         if method == 'naive':
-            self.centroids = self.rng.random(size=(self.n_clusters, 2))
+            self.centroids = self.rng.random(size=(self.n_clusters_guess, 2))
         elif method == 'from_data':
             self.centroids = self.data[self.rng.choice(self.data.shape[0], replace=False, size=self.n_clusters_guess)]
         elif method == 'k++':
@@ -160,7 +160,11 @@ class KMeansAnim():
     def UpdateCentroids(self):
         for i in range(self.n_clusters_guess):
             idx = self.labels == i
-            self.new_centroids[i,:] = np.mean(self.data[idx,:], axis=0)
+            if sum(idx) == 0:
+                # Throw any unused centroids out of frame
+                self.new_centroids[i,:] = [5,5]
+            else:
+                self.new_centroids[i,:] = np.mean(self.data[idx,:], axis=0)
         return
     
     def MoveAlongCentroidPath(self):
@@ -208,7 +212,7 @@ class KMeansAnim():
     def Go(self):
         self.ani = FuncAnimation(self.fig, 
                                  self.Update,
-                                 blit = False,  # Can't seem to get blitting to work with titles, even if using ax.text inside the plot area :-(
+                                 blit = False,  # Can't seem to get blitting to work when we have titles, even if using ax.text inside the plot area :-(
                                  interval = 10,
                                  cache_frame_data = True)
         plt.show()
