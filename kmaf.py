@@ -1,5 +1,5 @@
 ##########################################################################
-#  The author of this code claims no rights or responsiblities for it.   #
+#  The author of this code claims no rights or responsibilities for it.  #
 #  The code is provided as is, with the hope that you will enjoy and/or  #
 #  learn from it.                                                        #
 #                                                                        #
@@ -102,6 +102,9 @@ class KMeansAnim():
 
         # Initialize the figure
         self.CreateFigure()
+
+        # Run the animation
+        self.Go()
         return
     
     def CreateData(self):
@@ -236,10 +239,3 @@ class KMeansAnim():
 
 if __name__ == '__main__':
     k = KMeansAnim()
-    k.Go()
-
-
-
-# Add an option to show accuracy
-
-# Factor out the code in __init__

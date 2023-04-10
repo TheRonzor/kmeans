@@ -1,5 +1,5 @@
 ##########################################################################
-#  The author of this code claims no rights or responsiblities for it.   #
+#  The author of this code claims no rights or responsibilities for it.  #
 #  The code is provided as is, with the hope that you will enjoy and/or  #
 #  learn from it.                                                        #
 #                                                                        #
