@@ -32,8 +32,6 @@ plt.style.use('dark_background')                            # it looks better in
 
 __version__ = '1.0.1'                                       # I might remember to update the version number occasionally
 
-
-
 class KMeansAnim():
     FIG_SIZE    = (8,8)
     
@@ -41,9 +39,17 @@ class KMeansAnim():
     #  Data
     ALPHA_DATA  = 0.6
     SIZE_DATA   = 20
+
     #  Centroids
-    ALPHA_CENT  = 0.9
-    SIZE_CENT   = 500
+    ALPHA_CENT      = 0.9
+    SIZE_CENT       = 500
+
+    # Initialization choices for centroids
+    INIT_METHODS    = (
+                        'k++',               # k-means++
+                        'Uniform',           # select uniformly from data
+                        'Naive'              # any point in the plot area (unit square)
+                        )
 
     # Transition curve for animation, (1/f) where f = 1 + (1/x^a - 1)^k
     SIGMOID_A   = 1.6       # "Timing"
@@ -58,7 +64,7 @@ class KMeansAnim():
                  n_points           = 420, 
                  n_clusters         = 42, 
                  n_clusters_guess   = None, 
-                 method             = 'k++',
+                 method             = INIT_METHODS[0],
                  seed               = None,
                  cmap               = 'rainbow'):
         
@@ -67,31 +73,49 @@ class KMeansAnim():
         self.n_clusters = n_clusters
         
         if n_clusters_guess is None:
-            # Default guess is the clairvoyant one, since my AI is the best AI ;-)
+            # Default guess is the clairvoyant one
             self.n_clusters_guess = self.n_clusters
         else:
             self.n_clusters_guess = n_clusters_guess
         
+        # Initialize PRNG
         if seed is None:
             self.seed = np.random.randint(1000)
         else:
             self.seed = seed
-        
         print('Running with seed: ', self.seed)
         self.rng = np.random.RandomState(self.seed)
 
         # Create the data
+        self.CreateData()
+
+        # Create the centroids
+        self.CreateCentroids(method)
+        self.cluster_colors = get_cmap(cmap)(np.linspace(0, 1, self.n_clusters_guess))[:,:-1] # Everything except the alpha
+
+        # Initialize a placeholder for new centroids
+        self.new_centroids = self.centroids.copy()
+
+        # Transition curve for animations
+        self.sigmoid = 1/(1+(1/np.linspace(self.SIGMOID_MIN, self.SIGMOID_MAX, self.SIGMOID_RES)**self.SIGMOID_A-1)**self.SIGMOID_K)
+        self.path_pos = self.SIGMOID_RES-1
+
+        # Initialize the figure
+        self.CreateFigure()
+        return
+    
+    def CreateData(self):
         self.data, self.y = mb(n_samples    = self.n_points, 
                                centers      = self.n_clusters, 
                                n_features   = 2,  
                                random_state = self.rng)
-        
         self.data = MMS().fit_transform(self.data) # Rescale data to be in the unit square for these examples
+        return
 
-        # Create the centroids
-        if method == 'naive':
+    def CreateCentroids(self, method):
+        if method == 'Naive':
             self.centroids = self.rng.random(size=(self.n_clusters_guess, 2))
-        elif method == 'from_data':
+        elif method == 'Uniform':
             self.centroids = self.data[self.rng.choice(self.data.shape[0], replace=False, size=self.n_clusters_guess)]
         elif method == 'k++':
             # Select first centroid uniformly from the data
@@ -100,11 +124,11 @@ class KMeansAnim():
                 # Initialize distance array
                 d = np.zeros(shape=[self.data.shape[0], self.centroids.shape[0]])
                 
-                # Compute distance from each point to each centroid
+                # Compute squared distance from each point to each centroid
                 for i, c in enumerate(self.centroids):
                     d[:,i] = np.sum((self.data-c)**2,axis=1)
                 
-                # For each point, compute distance to closest centroid
+                # Minimum squared distance for each point
                 p = np.min(d, axis=1)
                 
                 # Select the next centroid from the data with probability proportional
@@ -112,19 +136,11 @@ class KMeansAnim():
                 idx = self.rng.choice(len(self.data), p=p/sum(p))
                 new_centroid = self.data[idx,:].reshape(1,-1)
                 self.centroids = np.concatenate([self.centroids, new_centroid], axis=0)
-
-        self.cluster_colors = get_cmap(cmap)(np.linspace(0, 1, self.n_clusters_guess))[:,:-1] # Everything except the alpha
-
-        # Initialize a placeholder for new centroids, out of range
-        #self.new_centroids = -np.ones(shape=[self.n_clusters_guess, 2])
-        self.new_centroids = self.centroids.copy()
-
-        # Transition curve for animations
-        # f(t) = 1/(1+ (1/t^a -1)^k); a is timing, k is sharpness of the curve
-        self.sigmoid = 1/(1+(1/np.linspace(self.SIGMOID_MIN, self.SIGMOID_MAX, self.SIGMOID_RES)**self.SIGMOID_A-1)**self.SIGMOID_K)
-        self.path_pos = self.SIGMOID_RES-1
-
-        # Initialize the figure objects
+        else:
+            raise ValueError('Unknown initialization method:', method)
+        return
+    
+    def CreateFigure(self):
         self.fig, self.ax = plt.subplots(figsize=self.FIG_SIZE)
 
         # Initialize empty plots with display settings for data and centroids
@@ -135,7 +151,7 @@ class KMeansAnim():
         self.color_data = np.ones([len(self.data),3])
         self.color_cent = self.cluster_colors
 
-        # Make the centroids invisible for now
+        # Make the centroids invisible at first
         self.scat_cent.set_alpha(0)
 
         self.ax.set_xticks([])
@@ -143,7 +159,7 @@ class KMeansAnim():
         self.ax.set_xlim(-0.01,1.01)
         self.ax.set_ylim(-0.01,1.01)
         return
-
+    
     def UpdateClusters(self):
         distances = []
         for c in self.centroids:
@@ -221,3 +237,9 @@ class KMeansAnim():
 if __name__ == '__main__':
     k = KMeansAnim()
     k.Go()
+
+
+
+# Add an option to show accuracy
+
+# Factor out the code in __init__

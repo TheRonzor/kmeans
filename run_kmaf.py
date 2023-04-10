@@ -1,18 +1,30 @@
+##########################################################################
+#  The author of this code claims no rights or responsiblities for it.   #
+#  The code is provided as is, with the hope that you will enjoy and/or  #
+#  learn from it.                                                        #
+#                                                                        #
+#  I would also like to share a blessing with you that was shared with   #
+#  me through another random piece of code, long ago in a far away land: #
+#                                                                        #
+#      May you do good and not evil                                      #
+#      May you find forgiveness for yourself and forgive others          #
+#      May you share freely, never taking more than you give.            #
+#                                                                        #
+##########################################################################
+
 import kmaf
 import tkinter as tk
 from tkinter import messagebox
 
 #  Create a tkinter window with some settings and a Go button
 #
-#  Use SimpleWindow.AddSetting() to create new settings
-#   - tk.Entry and tk.OptionMenu are the only options implemented (slightly different logic depending on the widget)
+#  Scroll to the bottom of the code to see just the basics of what you would need to adjust for your own needs
+#
+#  Use SimpleWindow.AddSetting() to create new settings:
+#   - tk.Entry and tk.OptionMenu are the only options implemented (no checkboxes, etc. Slightly different logic depending on the widget)
 #
 #  Settings are added as a pair of labels and input boxes. They are added left to right, then top to bottom.
-#  The default number of columns (2) can be modified by passing a value to num_columns when you instantiate SimpleWindow()
-#
-#  Modify the code in SimpleWindow.Go() to do whatever you want
-#
-#  Scroll to the bottom of the code to see just the basics of what you would need to adjust for your own needs
+#  The default number of columns (2) can be modified by passing a value for num_columns when you instantiate SimpleWindow()
 
 
 def center(win):
@@ -166,19 +178,24 @@ class SimpleWindow():
             messagebox.showwarning(title='Error', message=str(e))
         return
 
+########################################################################## 
+# To modify the code to do something other than the k-means animation,   #
+# adjust the code below, as well as the body of the Go() function above  #
+##########################################################################
+
 # Create a new window
-s = SimpleWindow()
+s = SimpleWindow(title='Animation Controls')
 
 # Add the widgets
 #  -They will be added in order, left to right, then top to bottom.
 #  -For more columns, pass num_columns to SimpleWindow() above, the default is 2.
 
 k           = s.AddSetting('k (actual) = ', int, 3)
-init_method = s.AddSetting('Init. Method = ', str, ('k++', 'from_data', 'naive'), input_width=10)
+init_method = s.AddSetting('Init. Method = ', str, kmaf.KMeansAnim.INIT_METHODS, input_width=10)
 kg          = s.AddSetting('k (guess) = ', int, 3)
 seed        = s.AddSetting('Seed = ', int, kmaf.np.random.randint(1000))
 n           = s.AddSetting('n = ', int, 100)
-cmap        = s.AddSetting('cmap = ', str, 'rainbow', input_width=10)
+cmap        = s.AddSetting('Colormap = ', str, 'rainbow', input_width=10)
 
 # Show the window
 s.Deploy()
