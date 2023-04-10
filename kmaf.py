@@ -18,7 +18,9 @@
         # The Fun and Fancy Version! #
         ##############################
 
-
+# This code runs an animated example of K-means.
+# It is specifically designed for demonstration purposes,
+# and is not intended for any actual analysis!
 
 import numpy as np                                          # It's pronounced num-pee
 from time import sleep                                      # because even computers need to slow down sometimes
@@ -58,7 +60,7 @@ class KMeansAnim():
     SIGMOID_MIN = 0.01      # Not zero
     SIGMOID_MAX = 1.00      # Definitely one
 
-    DT          = 1.00      # For sleeps, in seconds
+    DT          = 1.00      # For sleeps, in seconds. So the animation doesn't run too fast.
     
     def __init__(self, 
                  n_points           = 420, 
@@ -231,11 +233,12 @@ class KMeansAnim():
     def Go(self):
         self.ani = FuncAnimation(self.fig, 
                                  self.Update,
-                                 blit = False,  # Can't seem to get blitting to work when we have titles, even if using ax.text inside the plot area :-(
+                                 blit = False,  # Can't seem to get blitting to work when the figure has titles, even if using ax.text inside the plot area as many have recommended :-(
                                  interval = 10,
                                  cache_frame_data = True)
         plt.show()
         return
 
+# In case we want to run it like a script.
 if __name__ == '__main__':
     k = KMeansAnim()

@@ -17,7 +17,16 @@ from tkinter import messagebox
 from traceback import print_exc
 
 class SimpleWindow():
-    '''A window with a settings area and a Go button'''
+    '''
+    A window with a settings area and a Go button.
+
+    The settings are organized into 2 columns by default, this can be adjusted
+    by passing in a value for num_columns.
+
+    The geometry (size) of the window is a string, e.g. '400x200'. The window will be resized
+    and centered once all the widgets have been added, but the behavior is a bit finnicky. Passing
+    in a value for geometry might help if the window is not appearing as desired.
+    '''
 
     LBL_ANCHOR          = tk.E  # Labels are anchored to the east
     INP_ANCHOR          = tk.W  # Input boxes are anchored to the west
@@ -39,24 +48,25 @@ class SimpleWindow():
                  title='A Simple Window', 
                  num_columns = 2
                  ):
+        
+        # Create the main window
         self.main = tk.Tk()
         self.main.geometry(geometry)
-
         self.main.title(title)
 
-        # Partition the window into a row for the settings and a row for the go button
-        # We'll call this partition the interface
+        # Partition the main window into a row for the settings and a row for the go button
+        # We'll call this partition the "interface"
         self.interface = tk.Frame(self.main)
-        self.interface.rowconfigure(0, weight=1) # The Settings grid goes in this row
-        self.interface.rowconfigure(1, weight=1) # The GO button gets its own row
+        self.interface.rowconfigure(0, weight=1) # The Settings grid will be the top row of the interface
+        self.interface.rowconfigure(1, weight=1) # The GO button will be the bottom row of the interface
 
         # The settings frame is a subset of the interface frame,
-        # and starts with a single row (we'll add more rows as needed as we add widgets)
+        # and starts with a single row. Additional rows are added automatically as needed.
         self.settings = tk.Frame(self.interface)
         self.settings.rowconfigure(0, weight=1)
         self.settings.grid(row=0)
 
-        # To keep track of which row and column
+        # To keep track of which row and column we are on
         self.current_row = 0
         self.current_column = 0
         self.num_columns = num_columns
@@ -64,24 +74,45 @@ class SimpleWindow():
         # Dictionary to store all the settings
         self.settings_dict = {}
 
-        # The go button will go in the second row of the interface
+        # Place the Go button the bottom row of the interface
         go = tk.Button(self.interface, text="Let's go!", command=self.Go, height=3)
         go.grid(row=1, sticky=tk.S)
         return
     
     def BindGo(self, fun, **kwargs):
+        '''
+        Pass in a function and keyword arguments.
+
+        The name of the kwargs should be the name of the parameter in fun,
+        and the value should be the name of the setting (these names are returned by AddSetting
+        when creating the settings)
+        '''
         self.go_fun = fun
         self.kwargs = kwargs
         return
     
     def AddSetting(self, label, inp_type, default, label_width=DFLT_LBL_WIDTH, input_width=DFLT_INP_WIDTH):
-        '''Add label and tk.Entry to the settings frame',
-           and store a reference to the value in a dictionary.
+        '''
+        Create a label and input box and add them to the window.
+        
+        Inputs:
 
-           The values provided for 'label' should be unique, since they'll be the keys in the dictionary.
+            label: The text which will appear in the label. These should be unique, since they
+                   will also be used as the keys in the settings dictionary.
 
-           For tk.Entry boxes, supply a single value for default
-           for tk.OptionMenu, provide a tuple, with the default as the first element
+            inp_type: The datatype of the setting, e.g. int, str, float
+
+            default: Either a single value (which will create a tk.Entry field) 
+                     or a tuple (which will create a tk.OptionMenu).
+
+            label_width: Not currently used. The labels seem to come out properly sized without it.
+
+            input_width: Can adjust as needed if the input box is too small/large
+
+        Output:
+
+            label: The same value that was passed in, for convenience. This is also the key for the
+                   setting in the settings dictionary.
         '''
 
         if type(default) != tuple:
@@ -111,7 +142,9 @@ class SimpleWindow():
                                                       padx=self.PADX, 
                                                       sticky = self.INP_ANCHOR)
 
+        # Increment the column counter for the next setting
         self.current_column+=1
+        # If the current row is full, create a new one and reset the column counter
         if self.current_column == self.num_columns:
             self.current_column = 0
             self.current_row+=1
@@ -120,8 +153,21 @@ class SimpleWindow():
         return label
     
     def GetSetting(self, label):
+        '''
+        Retrieves the current value for a setting.
+
+        label is the same value that was used when the setting was created using AddSetting().
+        '''
+
+        # Get the setting from the dictionary
         s = self.settings_dict[label]
+        # Get the datatype provided when the setting was created
+        # This is used to convert the value into the proper data type,
+        # since the values retrieved are always strings
         t = s[self.SD_TYPE]
+
+        # Check what type of widget we are retreving values from
+        # (currently, only tk.Entry and tk.OptionMenu are supported)
         tkt = type(s[self.SD_INPUT])
 
         if tkt == tk.Entry:
@@ -132,8 +178,11 @@ class SimpleWindow():
             raise NotImplementedError('Support for', tkt, 'not implemented.')
         
     def CenterMain(self):
-        """Center the main window. Should still set the initial geometry ahead of time, and only call after all widgets have been added.
-            Solution from:
+        """
+        Center and resize the main window. Should still set the initial geometry ahead of time, 
+        and only call this function after all widgets have been added.
+        
+        Solution from:
             https://stackoverflow.com/questions/3352918/how-to-center-a-window-on-the-screen-in-tkinter
         """
 
@@ -154,12 +203,19 @@ class SimpleWindow():
         return
 
     def Deploy(self):
+        '''Display the window. Call after everything else has been configured'''
         self.interface.pack(padx=20, pady=20)
         self.CenterMain()
         self.main.mainloop()
         return
     
     def Go(self):
+        '''
+        Run the function assigned. This is configured by first calling BindGo().
+
+        The kwargs are retrieved such that the key is the name of the parameter that
+        was provided to BindGo(), and the value is the label provided to AddSetting()
+        '''
         try:
             local_kwargs = {}
             for key, value in self.kwargs.items():
